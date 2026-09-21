@@ -1,5 +1,5 @@
 // ===============================
-// Typeris engine.js（現時点フルコード）
+// Typeris engine.js（LockDelay + Next + Hold + Ghost）
 // ===============================
 
 import { getUserRotate } from "./sandbox.js";
@@ -14,10 +14,16 @@ const BLOCK = 30;
 
 let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 let currentPiece = null;
+let holdPiece = null;
+let holdUsed = false;
+
+// Lock Delay
+let lockTimer = 0;
+const LOCK_DELAY = 500; // 500ms
 
 // ----- PNG Skins -----
 const skinFiles = {
-    I: [0, 90], // 180,270 は位置補正で流用
+    I: [0, 90],
     O: [0],
     T: [0, 90, 180, 270],
     S: [0, 90],
@@ -37,14 +43,13 @@ for (const type in skinFiles) {
         skins[type][rot] = img;
     });
 
-    // I ミノは 0/90 を 180/270 に流用
     if (type === "I") {
         skins.I[180] = skins.I[0];
         skins.I[270] = skins.I[90];
     }
 }
 
-// ----- 回転補正テーブル -----
+// ----- 回転補正 -----
 const offset = {
     I: {
         0:   { x: 0,  y: 0 },
@@ -66,179 +71,37 @@ const offset = {
     }
 };
 
-// ----- テトリミノ形状（簡易版：回転ごとに4x4） -----
-const SHAPES = {
-    I: {
-        0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [0, 0, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 0]
-        ],
-        180: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0]
-        ]
-    },
-    O: {
-        0: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
-        ]
-    },
-    T: {
-        0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        180: [
-            [0, 1, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [0, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ]
-    },
-    S: {
-        0: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        180: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ]
-    },
-    Z: {
-        0: [
-            [0, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        180: [
-            [0, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ]
-    },
-    J: {
-        0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        180: [
-            [1, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ]
-    },
-    L: {
-        0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        90: [
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        180: [
-            [0, 0, 1, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
-        ],
-        270: [
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
-        ]
+// ----- SHAPES（略） -----
+（※ここは前回の SHAPES をそのまま使ってOK。長いので省略してるけど、必要なら全量もう一度出すよ。）
+
+
+// ===============================
+// 7-Bag Next Queue
+// ===============================
+let nextQueue = [];
+
+function generateBag() {
+    const bag = ["I", "O", "T", "S", "Z", "J", "L"];
+    for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
     }
-};
+    return bag;
+}
 
-// ----- ピース生成（とりあえずランダム） -----
-const TYPES = ["I", "O", "T", "S", "Z", "J", "L"];
+function refillNext() {
+    while (nextQueue.length < 5) {
+        nextQueue.push(...generateBag());
+    }
+}
 
+// ===============================
+// ピース生成
+// ===============================
 function spawnPiece() {
-    const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    refillNext();
+    const type = nextQueue.shift();
+
     currentPiece = {
         type,
         rotation: 0,
@@ -246,9 +109,26 @@ function spawnPiece() {
         y: 0,
         shape: SHAPES[type]
     };
+
+    holdUsed = false;
+    lockTimer = 0;
 }
 
-// ----- 描画 -----
+// ===============================
+// ゴーストミノ
+// ===============================
+function getGhostPiece(piece) {
+    let ghost = { ...piece };
+
+    while (validPosition(ghost, ghost.x, ghost.y + 1)) {
+        ghost.y++;
+    }
+    return ghost;
+}
+
+// ===============================
+// 描画
+// ===============================
 function drawBoard() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -259,22 +139,18 @@ function drawBoard() {
             if (cell) {
                 const img = skins[cell.type][cell.rotation];
                 const off = offset[cell.type]?.[cell.rotation] || { x: 0, y: 0 };
-                ctx.drawImage(
-                    img,
-                    (x + off.x) * BLOCK,
-                    (y + off.y) * BLOCK,
-                    BLOCK,
-                    BLOCK
-                );
+                ctx.drawImage(img, (x + off.x) * BLOCK, (y + off.y) * BLOCK, BLOCK, BLOCK);
             }
         }
     }
 }
 
-function drawPiece(piece) {
+function drawPiece(piece, ghost = false) {
     const img = skins[piece.type][piece.rotation];
     const off = offset[piece.type]?.[piece.rotation] || { x: 0, y: 0 };
     const shape = piece.shape[piece.rotation];
+
+    ctx.globalAlpha = ghost ? 0.3 : 1.0;
 
     for (let dy = 0; dy < shape.length; dy++) {
         for (let dx = 0; dx < shape[dy].length; dx++) {
@@ -289,14 +165,22 @@ function drawPiece(piece) {
             }
         }
     }
+
+    ctx.globalAlpha = 1.0;
 }
 
 function draw() {
     drawBoard();
-    if (currentPiece) drawPiece(currentPiece);
+
+    const ghost = getGhostPiece(currentPiece);
+    drawPiece(ghost, true);
+
+    drawPiece(currentPiece);
 }
 
-// ----- 衝突判定 -----
+// ===============================
+// 衝突判定
+// ===============================
 function validPosition(piece, x, y) {
     const shape = piece.shape[piece.rotation];
 
@@ -314,7 +198,23 @@ function validPosition(piece, x, y) {
     return true;
 }
 
-// ----- ピース固定 -----
+// ===============================
+// Lock Delay
+// ===============================
+function updateLockDelay(delta) {
+    if (!validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+        lockTimer += delta;
+        if (lockTimer >= LOCK_DELAY) {
+            lockPiece();
+        }
+    } else {
+        lockTimer = 0;
+    }
+}
+
+// ===============================
+// ピース固定
+// ===============================
 function lockPiece() {
     const shape = currentPiece.shape[currentPiece.rotation];
 
@@ -338,7 +238,9 @@ function lockPiece() {
     draw();
 }
 
-// ----- キー操作 -----
+// ===============================
+// キー操作
+// ===============================
 document.addEventListener("keydown", (e) => {
     if (!currentPiece) return;
 
@@ -350,11 +252,11 @@ document.addEventListener("keydown", (e) => {
             movePiece(1);
             break;
         case "ArrowUp":
-            rotatePiece(1); // 右回転
+            rotatePiece(1);
             break;
         case "z":
         case "Z":
-            rotatePiece(-1); // 左回転
+            rotatePiece(-1);
             break;
         case "ArrowDown":
             softDrop();
@@ -362,7 +264,10 @@ document.addEventListener("keydown", (e) => {
         case " ":
             hardDrop();
             break;
-        // C は後でホールド実装
+        case "c":
+        case "C":
+            hold();
+            break;
     }
 });
 
@@ -371,6 +276,7 @@ function movePiece(dir) {
 
     if (validPosition(currentPiece, newX, currentPiece.y)) {
         currentPiece.x = newX;
+        lockTimer = 0;
         draw();
     }
 }
@@ -381,10 +287,7 @@ function rotatePiece(dir) {
     let newRotation = (currentPiece.rotation + (dir === 1 ? 90 : -90)) % 360;
     if (newRotation < 0) newRotation += 360;
 
-    let testPiece = {
-        ...currentPiece,
-        rotation: newRotation
-    };
+    let testPiece = { ...currentPiece, rotation: newRotation };
 
     if (typeof userRotate === "function") {
         try {
@@ -396,6 +299,7 @@ function rotatePiece(dir) {
 
     if (validPosition(testPiece, testPiece.x, testPiece.y)) {
         currentPiece.rotation = testPiece.rotation;
+        lockTimer = 0;
         draw();
     }
 }
@@ -420,6 +324,55 @@ function hardDrop() {
     draw();
 }
 
-// ----- 初期化 -----
+// ===============================
+// Hold
+// ===============================
+function hold() {
+    if (holdUsed) return;
+
+    if (!holdPiece) {
+        holdPiece = currentPiece.type;
+        spawnPiece();
+    } else {
+        const temp = currentPiece.type;
+        currentPiece = {
+            type: holdPiece,
+            rotation: 0,
+            x: 3,
+            y: 0,
+            shape: SHAPES[holdPiece]
+        };
+        holdPiece = temp;
+    }
+
+    holdUsed = true;
+    draw();
+}
+
+// ===============================
+// Gravity Loop
+// ===============================
+let lastTime = performance.now();
+
+function gameLoop(time) {
+    const delta = time - lastTime;
+    lastTime = time;
+
+    // Gravity
+    if (delta > 16) {
+        if (validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+            currentPiece.y++;
+        }
+        updateLockDelay(delta);
+        draw();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+// ===============================
+// Start
+// ===============================
 spawnPiece();
 draw();
+requestAnimationFrame(gameLoop);
