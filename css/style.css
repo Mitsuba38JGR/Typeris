@@ -90,3 +90,32 @@ body {
 ::-webkit-scrollbar-track {
     background: #1e1e1e;
 }
+#side-ui {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: #1f1f1f;
+    border-bottom: 2px solid #333;
+}
+
+.ui-box {
+    background: #252526;
+    border: 1px solid #333;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 5px;
+}
+
+#guide {
+    background: #252526;
+    border-top: 2px solid #333;
+    padding: 10px;
+    color: #ccc;
+    font-family: Consolas, monospace;
+    font-size: 14px;
+    height: 150px;
+    overflow-y: auto;
+}
