@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Sandbox</title>
+</head>
+<body>
+
+<script>
+window.addEventListener("message", (event) => {
+    const code = event.data.code;
+
+    try {
+        const userFunc = new Function(code);
+        const result = userFunc();
+        parent.postMessage({ result }, "*");
+    } catch (e) {
+        parent.postMessage({ error: e.toString() }, "*");
+    }
+});
+</script>
+
+</body>
+</html>
