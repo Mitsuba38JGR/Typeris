@@ -1,5 +1,5 @@
 // ===============================
-// Typeris engine.js（LockDelay + Next + Hold + Ghost）
+// Typeris engine.js（LineClear + PC + Next/Hold UI + Guide）
 // ===============================
 
 import { getUserRotate } from "./sandbox.js";
@@ -19,7 +19,7 @@ let holdUsed = false;
 
 // Lock Delay
 let lockTimer = 0;
-const LOCK_DELAY = 500; // 500ms
+const LOCK_DELAY = 500; // ms
 
 // ----- PNG Skins -----
 const skinFiles = {
@@ -71,13 +71,175 @@ const offset = {
     }
 };
 
-// ----- SHAPES（略） -----
-（※ここは前回の SHAPES をそのまま使ってOK。長いので省略してるけど、必要なら全量もう一度出すよ。）
+// ----- SHAPES -----
+const SHAPES = {
+    I: {
+        0: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [0, 0, 1, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 0]
+        ],
+        180: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0]
+        ]
+    },
+    O: {
+        0: [
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0]
+        ]
+    },
+    T: {
+        0: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [0, 1, 0, 0],
+            [1, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        180: [
+            [0, 1, 0, 0],
+            [1, 1, 1, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [0, 1, 0, 0],
+            [0, 1, 1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    },
+    S: {
+        0: [
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [1, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [1, 0, 0, 0],
+            [1, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        180: [
+            [0, 0, 0, 0],
+            [0, 1, 1, 0],
+            [1, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [1, 0, 0, 0],
+            [1, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    },
+    Z: {
+        0: [
+            [0, 0, 0, 0],
+            [1, 1, 0, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [0, 1, 0, 0],
+            [1, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        180: [
+            [0, 0, 0, 0],
+            [1, 1, 0, 0],
+            [0, 1, 1, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [0, 1, 0, 0],
+            [1, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    },
+    J: {
+        0: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [1, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        180: [
+            [1, 0, 0, 0],
+            [1, 1, 1, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [1, 1, 0, 0],
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    },
+    L: {
+        0: [
+            [0, 0, 0, 0],
+            [1, 1, 1, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        90: [
+            [1, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        180: [
+            [0, 0, 1, 0],
+            [1, 1, 1, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ],
+        270: [
+            [1, 0, 0, 0],
+            [1, 0, 0, 0],
+            [1, 1, 0, 0],
+            [0, 0, 0, 0]
+        ]
+    }
+};
 
-
-// ===============================
-// 7-Bag Next Queue
-// ===============================
+// ----- Next Queue (7-Bag) -----
 let nextQueue = [];
 
 function generateBag() {
@@ -95,9 +257,7 @@ function refillNext() {
     }
 }
 
-// ===============================
-// ピース生成
-// ===============================
+// ----- Spawn -----
 function spawnPiece() {
     refillNext();
     const type = nextQueue.shift();
@@ -112,11 +272,13 @@ function spawnPiece() {
 
     holdUsed = false;
     lockTimer = 0;
+
+    drawNext();
+    drawHold();
+    updateGuide();
 }
 
-// ===============================
-// ゴーストミノ
-// ===============================
+// ----- Ghost -----
 function getGhostPiece(piece) {
     let ghost = { ...piece };
 
@@ -126,9 +288,7 @@ function getGhostPiece(piece) {
     return ghost;
 }
 
-// ===============================
-// 描画
-// ===============================
+// ----- Draw Board / Piece -----
 function drawBoard() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -171,16 +331,61 @@ function drawPiece(piece, ghost = false) {
 
 function draw() {
     drawBoard();
-
     const ghost = getGhostPiece(currentPiece);
     drawPiece(ghost, true);
-
     drawPiece(currentPiece);
 }
 
-// ===============================
-// 衝突判定
-// ===============================
+// ----- Next / Hold UI -----
+function drawNext() {
+    const nextDiv = document.getElementById("next");
+    if (!nextDiv) return;
+
+    nextDiv.innerHTML = "";
+
+    for (let i = 0; i < 5 && i < nextQueue.length; i++) {
+        const type = nextQueue[i];
+        const img = skins[type][0];
+        const el = document.createElement("img");
+        el.src = img.src;
+        el.style.width = "40px";
+        el.style.height = "40px";
+        nextDiv.appendChild(el);
+    }
+}
+
+function drawHold() {
+    const holdDiv = document.getElementById("hold");
+    if (!holdDiv) return;
+
+    holdDiv.innerHTML = "";
+
+    if (holdPiece) {
+        const img = skins[holdPiece][0];
+        const el = document.createElement("img");
+        el.src = img.src;
+        el.style.width = "40px";
+        el.style.height = "40px";
+        holdDiv.appendChild(el);
+    }
+}
+
+// ----- Practice Guide -----
+function updateGuide() {
+    const guide = document.getElementById("guide");
+    if (!guide) return;
+
+    guide.innerHTML = `
+📘 <b>rotate() ガイド</b><br>
+・piece.rotation は 0,90,180,270<br>
+・戻り値は piece オブジェクト<br>
+・piece.x, piece.y を変更すると位置が動く<br>
+・board[y][x] で盤面が見れる<br>
+・validPosition(piece, x, y) で衝突判定<br>
+`;
+}
+
+// ----- Collision -----
 function validPosition(piece, x, y) {
     const shape = piece.shape[piece.rotation];
 
@@ -198,9 +403,27 @@ function validPosition(piece, x, y) {
     return true;
 }
 
-// ===============================
-// Lock Delay
-// ===============================
+// ----- Line Clear & Perfect Clear -----
+function clearLines() {
+    let cleared = 0;
+
+    for (let y = ROWS - 1; y >= 0; y--) {
+        if (board[y].every(cell => cell !== 0)) {
+            board.splice(y, 1);
+            board.unshift(Array(COLS).fill(0));
+            cleared++;
+            y++;
+        }
+    }
+
+    return cleared;
+}
+
+function isPerfectClear() {
+    return board.every(row => row.every(cell => cell === 0));
+}
+
+// ----- Lock Delay -----
 function updateLockDelay(delta) {
     if (!validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
         lockTimer += delta;
@@ -212,9 +435,7 @@ function updateLockDelay(delta) {
     }
 }
 
-// ===============================
-// ピース固定
-// ===============================
+// ----- Lock Piece -----
 function lockPiece() {
     const shape = currentPiece.shape[currentPiece.rotation];
 
@@ -234,13 +455,16 @@ function lockPiece() {
         }
     }
 
+    const cleared = clearLines();
+    if (cleared > 0 && isPerfectClear()) {
+        console.log("Perfect Clear!");
+    }
+
     spawnPiece();
     draw();
 }
 
-// ===============================
-// キー操作
-// ===============================
+// ----- Key Handling -----
 document.addEventListener("keydown", (e) => {
     if (!currentPiece) return;
 
@@ -324,9 +548,7 @@ function hardDrop() {
     draw();
 }
 
-// ===============================
-// Hold
-// ===============================
+// ----- Hold -----
 function hold() {
     if (holdUsed) return;
 
@@ -346,33 +568,27 @@ function hold() {
     }
 
     holdUsed = true;
+    drawHold();
     draw();
 }
 
-// ===============================
-// Gravity Loop
-// ===============================
+// ----- Gravity Loop -----
 let lastTime = performance.now();
 
 function gameLoop(time) {
     const delta = time - lastTime;
     lastTime = time;
 
-    // Gravity
-    if (delta > 16) {
-        if (validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
-            currentPiece.y++;
-        }
-        updateLockDelay(delta);
-        draw();
+    if (validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
+        currentPiece.y++;
     }
+    updateLockDelay(delta);
+    draw();
 
     requestAnimationFrame(gameLoop);
 }
 
-// ===============================
-// Start
-// ===============================
+// ----- Start -----
 spawnPiece();
 draw();
 requestAnimationFrame(gameLoop);
