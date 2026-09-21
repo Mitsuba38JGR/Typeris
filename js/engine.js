@@ -8,8 +8,14 @@ window.addEventListener("message", (event) => {
 
 function rotatePiece(piece, board) {
     if (typeof userRotate === "function") {
-        return userRotate(piece, board);
+        try {
+            return userRotate(piece, board);
+        } catch (e) {
+            console.error("ユーザー rotate() 実行中にエラー:", e);
+        }
     }
-    return piece; // デフォルト（何もしない）
-}
 
+    // デフォルトの回転処理
+    piece.rotation = (piece.rotation + 1) % 4;
+    return piece;
+}
