@@ -12,4 +12,15 @@ window.addEventListener("message", (event) => {
         console.log("Sandbox Result:", event.data.result);
     }
 });
+let userRotate = null;
+
+window.addEventListener("message", (event) => {
+    if (event.data.rotateFunc) {
+        userRotate = event.data.rotateFunc;
+        console.log("ユーザー rotate() をロードしました");
+    }
+    if (event.data.error) {
+        console.error("Sandbox Error:", event.data.error);
+    }
+});
 
