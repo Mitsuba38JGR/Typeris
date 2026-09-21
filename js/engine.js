@@ -60,3 +60,57 @@ function drawPiece(piece) {
         });
     });
 }
+const skins = {
+    I: {
+        0: new Image(),
+        90: new Image(),
+    },
+    O: {
+        0: new Image()
+    },
+    T: {
+        0: new Image(),
+        90: new Image(),
+        180: new Image(),
+        270: new Image()
+    },
+    S: {
+        0: new Image(),
+        90: new Image()
+    },
+    Z: {
+        0: new Image(),
+        90: new Image()
+    },
+    J: {
+        0: new Image(),
+        90: new Image(),
+        180: new Image(),
+        270: new Image()
+    },
+    L: {
+        0: new Image(),
+        90: new Image(),
+        180: new Image(),
+        270: new Image()
+    }
+};
+
+// 画像読み込み
+for (const type in skins) {
+    for (const rot in skins[type]) {
+        skins[type][rot].src = `images/${type}${rot}.png`;
+    }
+}
+function drawBlock(x, y, type, rotation) {
+    const img = skins[type][rotation];
+
+    if (!img.complete) {
+        // 読み込み前はプレースホルダー
+        ctx.fillStyle = "#333";
+        ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+        return;
+    }
+
+    ctx.drawImage(img, x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+}
