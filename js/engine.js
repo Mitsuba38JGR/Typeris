@@ -51,3 +51,12 @@ function drawBlock(x, y, color) {
     ctx.strokeStyle = "#000";
     ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
 }
+function drawPiece(piece) {
+    piece.shape.forEach((row, dy) => {
+        row.forEach((value, dx) => {
+            if (value !== 0) {
+                drawBlock(piece.x + dx, piece.y + dy, piece.color);
+            }
+        });
+    });
+}
