@@ -4,14 +4,9 @@
 <meta charset="UTF-8">
 <title>Typeris Practice</title>
 
-<!-- ================================
-     CSS
-================================ -->
 <link rel="stylesheet" href="css/style.css">
 
-<!-- ================================
-     Monaco Editor Loader
-================================ -->
+<!-- Monaco Editor -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
     require.config({
@@ -28,12 +23,18 @@
 <div id="editor"></div>
 
 <!-- ================================
-     右：テトリス画面＋操作パネル
+     右：テトリス画面＋UI
 ================================ -->
 <div id="right-panel">
 
     <!-- テトリス画面 -->
     <canvas id="tetris" width="300" height="600"></canvas>
+
+    <!-- Next / Hold パネル -->
+    <div id="side-ui">
+        <div id="next" class="ui-box"></div>
+        <div id="hold" class="ui-box"></div>
+    </div>
 
     <!-- 操作パネル -->
     <div id="controls">
@@ -41,16 +42,15 @@
         <div id="log"></div>
     </div>
 
+    <!-- Practice ガイド -->
+    <div id="guide"></div>
+
 </div>
 
-<!-- ================================
-     サンドボックス iframe
-================================ -->
+<!-- サンドボックス -->
 <iframe id="sandbox" src="sandbox/sandbox.html" style="display:none;"></iframe>
 
-<!-- ================================
-     JS 読み込み
-================================ -->
+<!-- JS -->
 <script type="module" src="js/editor.js"></script>
 <script type="module" src="js/sandbox.js"></script>
 <script type="module" src="js/engine.js"></script>
