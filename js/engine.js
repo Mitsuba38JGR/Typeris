@@ -134,3 +134,23 @@ function drawBlock(x, y, type, rotation) {
 
     ctx.drawImage(img, x * BLOCK, y * BLOCK, BLOCK, BLOCK);
 }
+const offset = {
+    I: {
+        0:   { x: 0,  y: 0 },
+        90:  { x: -1, y: 1 },
+        180: { x: 0,  y: -1 },  // ← 0°の画像を補正して使う
+        270: { x: 1,  y: 0 }    // ← 90°の画像を補正して使う
+    },
+    S: {
+        0:   { x: 0,  y: 0 },
+        90:  { x: 0,  y: 0 },
+        180: { x: -1, y: 0 },
+        270: { x: 0,  y: -1 }
+    },
+    Z: {
+        0:   { x: 0,  y: 0 },
+        90:  { x: 0,  y: 0 },
+        180: { x: -1, y: 0 },
+        270: { x: 0,  y: -1 }
+    }
+};
