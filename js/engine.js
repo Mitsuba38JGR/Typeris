@@ -60,6 +60,15 @@ function drawPiece(piece) {
         });
     });
 }
+const skinFiles = {
+    I: [0, 90, 180, 270],
+    O: [0],
+    T: [0, 90, 180, 270],
+    S: [0, 90],
+    Z: [0, 90],
+    J: [0, 90, 180, 270],
+    L: [0, 90, 180, 270]
+};
 const skins = {
     I: {
         0: new Image(),
