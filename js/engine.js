@@ -1,3 +1,4 @@
+import { getUserRotate } from "./sandbox.js";
 let userRotate = null;
 
 window.addEventListener("message", (event) => {
@@ -7,6 +8,8 @@ window.addEventListener("message", (event) => {
 });
 
 function rotatePiece(piece, board) {
+    const userRotate = getUserRotate();
+
     if (typeof userRotate === "function") {
         try {
             return userRotate(piece, board);
@@ -15,7 +18,7 @@ function rotatePiece(piece, board) {
         }
     }
 
-    // デフォルトの回転処理
+    // デフォルト回転
     piece.rotation = (piece.rotation + 1) % 4;
     return piece;
 }
