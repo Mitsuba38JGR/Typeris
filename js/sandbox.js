@@ -5,14 +5,6 @@ document.getElementById("run").onclick = () => {
     iframe.contentWindow.postMessage({ code }, "*");
 };
 
-window.addEventListener("message", (event) => {
-    if (event.data.error) {
-        console.error("Sandbox Error:", event.data.error);
-    } else {
-        console.log("Sandbox Result:", event.data.result);
-    }
-});
-let userRotate = null;
 
 window.addEventListener("message", (event) => {
     if (event.data.rotateFunc) {
