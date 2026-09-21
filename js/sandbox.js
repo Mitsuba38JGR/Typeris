@@ -1,10 +1,13 @@
+import { getEditorCode } from "./editor.js";
+
 const iframe = document.getElementById("sandbox");
 
 document.getElementById("run").onclick = () => {
-    const code = editor.getValue();
+    const code = getEditorCode(); // Monaco Editor から取得
     iframe.contentWindow.postMessage({ code }, "*");
 };
 
+let userRotate = null;
 
 window.addEventListener("message", (event) => {
     if (event.data.rotateFunc) {
@@ -16,3 +19,6 @@ window.addEventListener("message", (event) => {
     }
 });
 
+export function getUserRotate() {
+    return userRotate;
+}
