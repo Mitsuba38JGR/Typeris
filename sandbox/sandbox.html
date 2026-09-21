@@ -18,20 +18,19 @@ window.addEventListener("message", (event) => {
     const code = event.data.code;
 
     try {
-        // プレイヤーのコードを関数として評価
         const userFunc = new Function(`
             ${code}
             return rotate;
         `);
 
         const rotateFunc = userFunc();
-
         parent.postMessage({ rotateFunc }, "*");
     } catch (e) {
         parent.postMessage({ error: e.toString() }, "*");
     }
 });
 </script>
+
 
 </body>
 </html>
