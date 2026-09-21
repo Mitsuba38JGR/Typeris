@@ -61,7 +61,7 @@ function drawPiece(piece) {
     });
 }
 const skinFiles = {
-    I: [0, 90, 180, 270],
+    I: [0, 90],
     O: [0],
     T: [0, 90, 180, 270],
     S: [0, 90],
@@ -106,11 +106,22 @@ const skins = {
 };
 
 // 画像読み込み
-for (const type in skins) {
-    for (const rot in skins[type]) {
-        skins[type][rot].src = `images/${type}${rot}.png`;
+for (const type in skinFiles) {
+    skins[type] = {};
+
+    skinFiles[type].forEach(rot => {
+        const img = new Image();
+        img.src = `images/${type}${rot}.png`;
+        skins[type][rot] = img;
+    });
+
+    // I ミノの追加マッピング
+    if (type === "I") {
+        skins.I[180] = skins.I[0];   // 横長は同じ
+        skins.I[270] = skins.I[90];  // 縦長は同じ
     }
 }
+
 function drawBlock(x, y, type, rotation) {
     const img = skins[type][rotation];
 
