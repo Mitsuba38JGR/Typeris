@@ -1,5 +1,5 @@
 // ===============================
-// Typeris engine.js（LineClear + PC + Next/Hold UI + Guide）
+// Typeris engine.js（Full PNG Piece Rendering Edition）
 // ===============================
 
 import { getUserRotate } from "./sandbox.js";
@@ -71,179 +71,181 @@ const offset = {
     }
 };
 
-// ----- SHAPES -----
+// ----- SHAPES（当たり判定用） -----
 const SHAPES = {
     I: {
         0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,1,1],
+            [0,0,0,0],
+            [0,0,0,0]
         ],
         90: [
-            [0, 0, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 1, 0]
+            [0,0,1,0],
+            [0,0,1,0],
+            [0,0,1,0],
+            [0,0,1,0]
         ],
         180: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 1],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,1,1],
+            [0,0,0,0],
+            [0,0,0,0]
         ],
         270: [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0]
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0]
         ]
     },
     O: {
         0: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [0,1,1,0],
+            [0,1,1,0],
+            [0,0,0,0]
         ]
     },
     T: {
         0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ],
         90: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ],
         180: [
-            [0, 1, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
         ],
         270: [
-            [0, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [0,1,1,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ]
     },
     S: {
         0: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [0,1,1,0],
+            [1,1,0,0],
+            [0,0,0,0]
         ],
         90: [
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [1,0,0,0],
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ],
         180: [
-            [0, 0, 0, 0],
-            [0, 1, 1, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [0,1,1,0],
+            [1,1,0,0],
+            [0,0,0,0]
         ],
         270: [
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [1,0,0,0],
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ]
     },
     Z: {
         0: [
-            [0, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0]
         ],
         90: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [1,1,0,0],
+            [1,0,0,0],
+            [0,0,0,0]
         ],
         180: [
-            [0, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 1, 1, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,0,0],
+            [0,1,1,0],
+            [0,0,0,0]
         ],
         270: [
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [1,1,0,0],
+            [1,0,0,0],
+            [0,0,0,0]
         ]
     },
     J: {
         0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,1,0],
+            [0,0,1,0],
+            [0,0,0,0]
         ],
         90: [
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
+            [0,1,0,0],
+            [0,1,0,0],
+            [1,1,0,0],
+            [0,0,0,0]
         ],
         180: [
-            [1, 0, 0, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
+            [1,0,0,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
         ],
         270: [
-            [1, 1, 0, 0],
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
+            [1,1,0,0],
+            [1,0,0,0],
+            [1,0,0,0],
+            [0,0,0,0]
         ]
     },
     L: {
         0: [
-            [0, 0, 0, 0],
-            [1, 1, 1, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,0,0],
+            [1,1,1,0],
+            [1,0,0,0],
+            [0,0,0,0]
         ],
         90: [
-            [1, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 0]
+            [1,1,0,0],
+            [0,1,0,0],
+            [0,1,0,0],
+            [0,0,0,0]
         ],
         180: [
-            [0, 0, 1, 0],
-            [1, 1, 1, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0]
+            [0,0,1,0],
+            [1,1,1,0],
+            [0,0,0,0],
+            [0,0,0,0]
         ],
         270: [
-            [1, 0, 0, 0],
-            [1, 0, 0, 0],
-            [1, 1, 0, 0],
-            [0, 0, 0, 0]
+            [1,0,0,0],
+            [1,0,0,0],
+            [1,1,0,0],
+            [0,0,0,0]
         ]
     }
 };
 
-// ----- Next Queue (7-Bag) -----
+// ===============================
+// Next Queue (7-Bag)
+// ===============================
 let nextQueue = [];
 
 function generateBag() {
-    const bag = ["I", "O", "T", "S", "Z", "J", "L"];
+    const bag = ["I","O","T","S","Z","J","L"];
     for (let i = bag.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [bag[i], bag[j]] = [bag[j], bag[i]];
@@ -257,7 +259,9 @@ function refillNext() {
     }
 }
 
-// ----- Spawn -----
+// ===============================
+// Spawn
+// ===============================
 function spawnPiece() {
     refillNext();
     const type = nextQueue.shift();
@@ -278,7 +282,9 @@ function spawnPiece() {
     updateGuide();
 }
 
-// ----- Ghost -----
+// ===============================
+// Ghost
+// ===============================
 function getGhostPiece(piece) {
     let ghost = { ...piece };
 
@@ -288,7 +294,9 @@ function getGhostPiece(piece) {
     return ghost;
 }
 
-// ----- Draw Board / Piece -----
+// ===============================
+// Draw Board (PNG 全体方式)
+// ===============================
 function drawBoard() {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -299,12 +307,22 @@ function drawBoard() {
             if (cell) {
                 const img = skins[cell.type][cell.rotation];
                 const off = offset[cell.type]?.[cell.rotation] || { x: 0, y: 0 };
-                ctx.drawImage(img, (x + off.x) * BLOCK, (y + off.y) * BLOCK, BLOCK, BLOCK);
+
+                ctx.drawImage(
+                    img,
+                    (x + off.x) * BLOCK,
+                    (y + off.y) * BLOCK,
+                    BLOCK * 4,
+                    BLOCK * 4
+                );
             }
         }
     }
 }
 
+// ===============================
+// Draw Piece (PNG 全体方式)
+// ===============================
 function drawPiece(piece, ghost = false) {
     const img = skins[piece.type][piece.rotation];
     const off = offset[piece.type]?.[piece.rotation] || { x: 0, y: 0 };
@@ -322,7 +340,6 @@ function drawPiece(piece, ghost = false) {
     ctx.globalAlpha = 1.0;
 }
 
-
 function draw() {
     drawBoard();
     const ghost = getGhostPiece(currentPiece);
@@ -330,28 +347,25 @@ function draw() {
     drawPiece(currentPiece);
 }
 
-// ----- Next / Hold UI -----
+// ===============================
+// Next / Hold UI
+// ===============================
 function drawNext() {
     const nextDiv = document.getElementById("next");
-    if (!nextDiv) return;
-
     nextDiv.innerHTML = "";
 
-    for (let i = 0; i < 5 && i < nextQueue.length; i++) {
+    for (let i = 0; i < 5; i++) {
         const type = nextQueue[i];
         const img = skins[type][0];
         const el = document.createElement("img");
         el.src = img.src;
         el.style.width = "40px";
-        el.style.height = "40px";
         nextDiv.appendChild(el);
     }
 }
 
 function drawHold() {
     const holdDiv = document.getElementById("hold");
-    if (!holdDiv) return;
-
     holdDiv.innerHTML = "";
 
     if (holdPiece) {
@@ -359,16 +373,15 @@ function drawHold() {
         const el = document.createElement("img");
         el.src = img.src;
         el.style.width = "40px";
-        el.style.height = "40px";
         holdDiv.appendChild(el);
     }
 }
 
-// ----- Practice Guide -----
+// ===============================
+// Practice Guide
+// ===============================
 function updateGuide() {
     const guide = document.getElementById("guide");
-    if (!guide) return;
-
     guide.innerHTML = `
 📘 <b>rotate() ガイド</b><br>
 ・piece.rotation は 0,90,180,270<br>
@@ -379,7 +392,9 @@ function updateGuide() {
 `;
 }
 
-// ----- Collision -----
+// ===============================
+// Collision
+// ===============================
 function validPosition(piece, x, y) {
     const shape = piece.shape[piece.rotation];
 
@@ -397,7 +412,9 @@ function validPosition(piece, x, y) {
     return true;
 }
 
-// ----- Line Clear & Perfect Clear -----
+// ===============================
+// Line Clear & Perfect Clear
+// ===============================
 function clearLines() {
     let cleared = 0;
 
@@ -417,7 +434,9 @@ function isPerfectClear() {
     return board.every(row => row.every(cell => cell === 0));
 }
 
-// ----- Lock Delay -----
+// ===============================
+// Lock Delay
+// ===============================
 function updateLockDelay(delta) {
     if (!validPosition(currentPiece, currentPiece.x, currentPiece.y + 1)) {
         lockTimer += delta;
@@ -429,7 +448,9 @@ function updateLockDelay(delta) {
     }
 }
 
-// ----- Lock Piece -----
+// ===============================
+// Lock Piece
+// ===============================
 function lockPiece() {
     const shape = currentPiece.shape[currentPiece.rotation];
 
@@ -458,7 +479,9 @@ function lockPiece() {
     draw();
 }
 
-// ----- Key Handling -----
+// ===============================
+// Key Handling
+// ===============================
 document.addEventListener("keydown", (e) => {
     if (!currentPiece) return;
 
@@ -542,7 +565,9 @@ function hardDrop() {
     draw();
 }
 
-// ----- Hold -----
+// ===============================
+// Hold
+// ===============================
 function hold() {
     if (holdUsed) return;
 
@@ -566,7 +591,9 @@ function hold() {
     draw();
 }
 
-// ----- Gravity Loop -----
+// ===============================
+// Gravity Loop
+// ===============================
 let lastTime = performance.now();
 
 function gameLoop(time) {
@@ -582,7 +609,9 @@ function gameLoop(time) {
     requestAnimationFrame(gameLoop);
 }
 
-// ----- Start -----
+// ===============================
+// Start
+// ===============================
 spawnPiece();
 draw();
 requestAnimationFrame(gameLoop);
