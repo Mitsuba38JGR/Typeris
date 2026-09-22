@@ -308,26 +308,20 @@ function drawBoard() {
 function drawPiece(piece, ghost = false) {
     const img = skins[piece.type][piece.rotation];
     const off = offset[piece.type]?.[piece.rotation] || { x: 0, y: 0 };
-    const shape = piece.shape[piece.rotation];
 
     ctx.globalAlpha = ghost ? 0.3 : 1.0;
 
-    for (let dy = 0; dy < shape.length; dy++) {
-        for (let dx = 0; dx < shape[dy].length; dx++) {
-            if (shape[dy][dx]) {
-                ctx.drawImage(
-                    img,
-                    (piece.x + dx + off.x) * BLOCK,
-                    (piece.y + dy + off.y) * BLOCK,
-                    BLOCK,
-                    BLOCK
-                );
-            }
-        }
-    }
+    ctx.drawImage(
+        img,
+        (piece.x + off.x) * BLOCK,
+        (piece.y + off.y) * BLOCK,
+        BLOCK * 4,
+        BLOCK * 4
+    );
 
     ctx.globalAlpha = 1.0;
 }
+
 
 function draw() {
     drawBoard();
