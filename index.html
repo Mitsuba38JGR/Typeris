@@ -2,58 +2,25 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Typeris Practice</title>
-
-<link rel="stylesheet" href="css/style.css">
-
-<!-- Monaco Editor -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-<script>
-    require.config({
-        paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }
-    });
-</script>
-
+<title>Typeris</title>
+css/style.css
 </head>
 <body>
 
-<!-- ================================
-     左：Monaco Editor
-================================ -->
-<div id="editor"></div>
+<div class="menu">
 
-<!-- ================================
-     右：テトリス画面＋UI
-================================ -->
-<div id="right-panel">
+    <h1>Typeris</h1>
+    <p>Programming × Modern Tetris</p>
 
-    <!-- テトリス画面 -->
-    <canvas id="tetris" width="300" height="600"></canvas>
+    practice.html
+        Practice
+    </a>
 
-    <!-- Next / Hold パネル -->
-    <div id="side-ui">
-        <div id="next" class="ui-box"></div>
-        <div id="hold" class="ui-box"></div>
-    </div>
-
-    <!-- 操作パネル -->
-    <div id="controls">
-        <button id="run">実行</button>
-        <div id="log"></div>
-    </div>
-
-    <!-- Practice ガイド -->
-    <div id="guide"></div>
+    tetr.html
+        Tetr
+    </a>
 
 </div>
-
-<!-- サンドボックス -->
-<iframe id="sandbox" src="sandbox/sandbox.html" style="display:none;"></iframe>
-
-<!-- JS -->
-<script type="module" src="js/editor.js"></script>
-<script type="module" src="js/sandbox.js"></script>
-<script type="module" src="js/practice.js"></script>
 
 </body>
 </html>
