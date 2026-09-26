@@ -13,7 +13,11 @@ const ROWS = 20;
 const BLOCK = 30;
 
 // ★ boardPieces：設置済みミノを「ミノ単位」で保存する
-let boardPieces = [];
+let board =
+Array.from(
+{ length: ROWS },
+() => Array(COLS).fill(0)
+);
 
 let currentPiece = null;
 let holdPiece = null;
@@ -24,55 +28,15 @@ let lockTimer = 0;
 const LOCK_DELAY = 500;
 
 // ----- PNG Skins -----
-const skinFiles = {
-    I: [0, 90],
-    O: [0],
-    T: [0, 90, 180, 270],
-    S: [0, 90],
-    Z: [0, 90],
-    J: [0, 90, 180, 270],
-    L: [0, 90, 180, 270]
-};
+const TYPES = ["I", "O", "T", "S", "Z", "J", "L"];
 
 const skins = {};
 
-for (const type in skinFiles) {
-    skins[type] = {};
-
-    skinFiles[type].forEach(rot => {
-        const img = new Image();
-        img.src = `images/${type}${rot}.png`;
-        skins[type][rot] = img;
-    });
-
-    if (type === "I") {
-        skins.I[180] = skins.I[0];
-        skins.I[270] = skins.I[90];
-    }
+for (const type of TYPES) {
+    const img = new Image();
+    img.src = `images/${type}.png`;
+    skins[type] = img;
 }
-
-// ----- 回転補正 -----
-const offset = {
-    I: {
-        0:   { x: 0,  y: 0 },
-        90:  { x: -1, y: 1 },
-        180: { x: 0,  y: -1 },
-        270: { x: 1,  y: 0 }
-    },
-    S: {
-        0:   { x: 0,  y: 0 },
-        90:  { x: 0,  y: 0 },
-        180: { x: -1, y: 0 },
-        270: { x: 0,  y: -1 }
-    },
-    Z: {
-        0:   { x: 0,  y: 0 },
-        90:  { x: 0,  y: 0 },
-        180: { x: -1, y: 0 },
-        270: { x: 0,  y: -1 }
-    }
-};
-
 // ----- SHAPES（当たり判定用） -----
 const SHAPES = {
     I: {
@@ -170,16 +134,48 @@ function getGhostPiece(piece) {
     }
     return ghost;
 }
+function drawBlock(x, y, type, alpha = 1) {
 
+    const img = skins[type];
+
+    ctx.globalAlpha = alpha;
+
+    ctx.drawImage(
+        img,
+        x * BLOCK,
+        y * BLOCK,
+        BLOCK,
+        BLOCK
+    );
+
+    ctx.globalAlpha = 1;
+}
 // ===============================
 // Draw Board (PNG 全体方式)
 // ===============================
 function drawBoard() {
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    for (const p of boardPieces) {
-        drawPiece(p);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    for (let y = 0; y < ROWS; y++) {
+
+        for (let x = 0; x < COLS; x++) {
+
+            if (board[y][x]) {
+
+                drawBlock(
+                    x,
+                    y,
+                    board[y][x]
+                );
+            }
+        }
     }
 }
 
@@ -187,20 +183,26 @@ function drawBoard() {
 // Draw Piece (PNG 全体方式)
 // ===============================
 function drawPiece(piece, ghost = false) {
-    const img = skins[piece.type][piece.rotation];
-    const off = offset[piece.type]?.[piece.rotation] || { x: 0, y: 0 };
 
-    ctx.globalAlpha = ghost ? 0.3 : 1.0;
+    const shape =
+        piece.shape[
+            piece.rotation
+        ];
 
-    ctx.drawImage(
-        img,
-        (piece.x + off.x) * BLOCK,
-        (piece.y + off.y) * BLOCK,
-        BLOCK * 4,
-        BLOCK * 4
-    );
+    for (let y = 0; y < shape.length; y++) {
 
-    ctx.globalAlpha = 1.0;
+        for (let x = 0; x < shape[y].length; x++) {
+
+            if (!shape[y][x]) continue;
+
+            drawBlock(
+                piece.x + x,
+                piece.y + y,
+                piece.type,
+                ghost ? 0.3 : 1
+            );
+        }
+    }
 }
 
 function draw() {
@@ -259,35 +261,43 @@ function updateGuide() {
 // Collision（shape を使う）
 // ===============================
 function validPosition(piece, x, y) {
-    const shape = piece.shape[piece.rotation];
+
+    const shape =
+        piece.shape[
+            piece.rotation
+        ];
 
     for (let dy = 0; dy < shape.length; dy++) {
+
         for (let dx = 0; dx < shape[dy].length; dx++) {
-            if (shape[dy][dx]) {
-                const px = x + dx;
-                const py = y + dy;
 
-                if (px < 0 || px >= COLS || py >= ROWS) return false;
+            if (!shape[dy][dx]) continue;
 
-                // ★ boardPieces に衝突してないか確認
-                for (const p of boardPieces) {
-                    const s = SHAPES[p.type][p.rotation];
-                    for (let sy = 0; sy < 4; sy++) {
-                        for (let sx = 0; sx < 4; sx++) {
-                            if (s[sy][sx]) {
-                                const bx = p.x + sx;
-                                const by = p.y + sy;
-                                if (px === bx && py === by) return false;
-                            }
-                        }
-                    }
-                }
+            const px = x + dx;
+            const py = y + dy;
+
+            // 左右の壁
+            if (px < 0 || px >= COLS) {
+                return false;
+            }
+
+            // 床
+            if (py >= ROWS) {
+                return false;
+            }
+
+            // 固定済みミノとの衝突
+            if (
+                py >= 0 &&
+                board[py][px]
+            ) {
+                return false;
             }
         }
     }
+
     return true;
 }
-
 // ===============================
 // Line Clear（ミノ単位で処理）
 // ===============================
@@ -375,22 +385,49 @@ function updateLockDelay(delta) {
 // Lock Piece（ミノ単位で保存）
 // ===============================
 function lockPiece() {
-    boardPieces.push({
-        type: currentPiece.type,
-        rotation: currentPiece.rotation,
-        x: currentPiece.x,
-        y: currentPiece.y
-    });
 
-    const cleared = clearLines();
-    if (cleared > 0 && isPerfectClear()) {
-        console.log("Perfect Clear!");
+    const shape =
+        currentPiece.shape[
+            currentPiece.rotation
+        ];
+
+    for (let dy = 0; dy < shape.length; dy++) {
+
+        for (let dx = 0; dx < shape[dy].length; dx++) {
+
+            if (!shape[dy][dx]) continue;
+
+            const px = currentPiece.x + dx;
+            const py = currentPiece.y + dy;
+
+            if (
+                py >= 0 &&
+                py < ROWS &&
+                px >= 0 &&
+                px < COLS
+            ) {
+                board[py][px] =
+                    currentPiece.type;
+            }
+        }
+    }
+
+    const cleared =
+        clearLines();
+
+    if (
+        cleared > 0 &&
+        isPerfectClear()
+    ) {
+        console.log(
+            "Perfect Clear!"
+        );
     }
 
     spawnPiece();
+
     draw();
 }
-
 // ===============================
 // Key Handling
 // ===============================
